@@ -1,0 +1,17 @@
+{
+  "world": {
+    "name": "Aethergrid_RL_Train_Office",
+    "type": "society",
+    "duration_days": 20,
+    "timestep_minutes": 15,
+    "seed": 77,
+    "start_date": "2025-11-01"
+  },
+  "tariff": {"id": "demo"},
+  "buildings": [
+    {"id": "RL01_office", "type": "office"}
+  ],
+  "resources": {"solar": true, "battery": true, "thermal_storage": true, "ev": true, "dhw": true, "grid_capacity_kw": null},
+  "events": [],
+  "connections": []
+}

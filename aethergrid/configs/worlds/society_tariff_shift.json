@@ -1,0 +1,24 @@
+{
+  "world": {
+    "name": "Aethergrid_Society_TariffShift",
+    "type": "society",
+    "duration_days": 2,
+    "timestep_minutes": 15,
+    "seed": 42,
+    "start_date": "2026-01-05"
+  },
+  "tariff": {"id": "tariff_shift"},
+  "buildings": [
+    {"id": "B01_office", "type": "office"},
+    {"id": "B02_school", "type": "school"},
+    {"id": "B03_hospital", "type": "hospital"},
+    {"id": "B04_residential", "type": "residential"},
+    {"id": "B05_retail", "type": "retail"},
+    {"id": "B06_lab", "type": "laboratory"},
+    {"id": "B07_hotel", "type": "hotel"},
+    {"id": "B08_public", "type": "public"}
+  ],
+  "resources": {"solar": true, "battery": true, "thermal_storage": true, "ev": true, "dhw": true, "grid_capacity_kw": null},
+  "events": [],
+  "connections": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "tariff_shift",
+  "currency": "INR",
+  "fixed_charge_per_day": 45.0,
+  "energy_rates": [
+    {"name": "off_peak", "start_hour": 0, "end_hour": 6, "rate_per_kwh": 5.0},
+    {"name": "standard", "start_hour": 6, "end_hour": 9, "rate_per_kwh": 7.5},
+    {"name": "peak_morning", "start_hour": 9, "end_hour": 12, "rate_per_kwh": 13.0},
+    {"name": "standard_2", "start_hour": 12, "end_hour": 18, "rate_per_kwh": 7.5},
+    {"name": "peak_evening", "start_hour": 18, "end_hour": 22, "rate_per_kwh": 15.5},
+    {"name": "off_peak_2", "start_hour": 22, "end_hour": 24, "rate_per_kwh": 5.0}
+  ],
+  "demand_charge_per_kva": 420.0,
+  "contract_demand_kva": 650.0,
+  "demand_excess_penalty_multiplier": 2.0,
+  "power_factor_target": 0.95,
+  "power_factor_penalty_rate_per_kvarh": 0.35,
+  "export_compensation_per_kwh": 2.4,
+  "billing_interval_minutes": 15
+}

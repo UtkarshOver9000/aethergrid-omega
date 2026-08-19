@@ -1,0 +1,10 @@
+{
+  "name": "stress_sensor_failure",
+  "world_config": "aethergrid/configs/worlds/society.json",
+  "controller": "quantile_mpc",
+  "seed": 42,
+  "risk_level": 0.05,
+  "horizon_steps": 32,
+  "stress_events": ["sensor_dropout"],
+  "carbon_kg_per_kwh": 0.71
+}

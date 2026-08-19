@@ -1,0 +1,791 @@
+{
+  "report": "FORECAST_REPORT",
+  "by_building_type": {
+    "office": {
+      "target": "base_load_kw",
+      "backend": "lightgbm",
+      "by_horizon": {
+        "4": {
+          "target": "base_load_kw",
+          "horizon_steps": 4,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 13.5058,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.4219,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.036,
+              "calibration_error": 0.014,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.688,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0767,
+              "calibration_error": 0.0233,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.2101,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2116,
+              "calibration_error": 0.0384,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.514,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.457,
+              "calibration_error": 0.043,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.2157,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7465,
+              "calibration_error": 0.0035,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.7443,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8733,
+              "calibration_error": 0.0267,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.4526,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9279,
+              "calibration_error": 0.0221,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "16": {
+          "target": "base_load_kw",
+          "horizon_steps": 16,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 12.9738,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.3818,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0354,
+              "calibration_error": 0.0146,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.6504,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.092,
+              "calibration_error": 0.008,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.1623,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.23,
+              "calibration_error": 0.02,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.4854,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4599,
+              "calibration_error": 0.0401,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.2167,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7382,
+              "calibration_error": 0.0118,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.7147,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8821,
+              "calibration_error": 0.0179,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.4432,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9375,
+              "calibration_error": 0.0125,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "32": {
+          "target": "base_load_kw",
+          "horizon_steps": 32,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 13.9947,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.4204,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0264,
+              "calibration_error": 0.0236,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.661,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0841,
+              "calibration_error": 0.0159,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.183,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2163,
+              "calibration_error": 0.0337,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.4983,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4603,
+              "calibration_error": 0.0397,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.2326,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7764,
+              "calibration_error": 0.0264,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.7446,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8858,
+              "calibration_error": 0.0142,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.4681,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9315,
+              "calibration_error": 0.0185,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "96": {
+          "target": "base_load_kw",
+          "horizon_steps": 96,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 15.617,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.5109,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0456,
+              "calibration_error": 0.0044,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.7535,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0833,
+              "calibration_error": 0.0167,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.2359,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2122,
+              "calibration_error": 0.0378,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.5004,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4753,
+              "calibration_error": 0.0247,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.258,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7617,
+              "calibration_error": 0.0117,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.7727,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8841,
+              "calibration_error": 0.0159,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.4842,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.931,
+              "calibration_error": 0.019,
+              "status": "CALIBRATED"
+            }
+          ]
+        }
+      }
+    },
+    "residential": {
+      "target": "base_load_kw",
+      "backend": "lightgbm",
+      "by_horizon": {
+        "4": {
+          "target": "base_load_kw",
+          "horizon_steps": 4,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 8.802,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.2861,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0558,
+              "calibration_error": 0.0058,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.4762,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.1116,
+              "calibration_error": 0.0116,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 0.8799,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.236,
+              "calibration_error": 0.014,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.1083,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4581,
+              "calibration_error": 0.0419,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 0.8897,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7209,
+              "calibration_error": 0.0291,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.5155,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8709,
+              "calibration_error": 0.0291,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.3087,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9314,
+              "calibration_error": 0.0186,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "16": {
+          "target": "base_load_kw",
+          "horizon_steps": 16,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 10.466,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.365,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0389,
+              "calibration_error": 0.0111,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.5533,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0849,
+              "calibration_error": 0.0151,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 0.9434,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.1969,
+              "calibration_error": 0.0531,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.2338,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4045,
+              "calibration_error": 0.0955,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.0718,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.6521,
+              "calibration_error": 0.0979,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.5517,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8538,
+              "calibration_error": 0.0462,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.3428,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9116,
+              "calibration_error": 0.0384,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "32": {
+          "target": "base_load_kw",
+          "horizon_steps": 32,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 9.0874,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.2891,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0433,
+              "calibration_error": 0.0067,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.4906,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.095,
+              "calibration_error": 0.005,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 0.8615,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2344,
+              "calibration_error": 0.0156,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.0915,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4639,
+              "calibration_error": 0.0361,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 0.8733,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7392,
+              "calibration_error": 0.0108,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.5197,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8606,
+              "calibration_error": 0.0394,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.3142,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9291,
+              "calibration_error": 0.0209,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "96": {
+          "target": "base_load_kw",
+          "horizon_steps": 96,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 8.8337,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.2861,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0482,
+              "calibration_error": 0.0018,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 0.4884,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0964,
+              "calibration_error": 0.0036,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 0.8894,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2344,
+              "calibration_error": 0.0156,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 1.1097,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4674,
+              "calibration_error": 0.0326,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 0.8812,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7513,
+              "calibration_error": 0.0013,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 0.5267,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8685,
+              "calibration_error": 0.0315,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.3172,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.931,
+              "calibration_error": 0.019,
+              "status": "CALIBRATED"
+            }
+          ]
+        }
+      }
+    },
+    "hospital": {
+      "target": "base_load_kw",
+      "backend": "lightgbm",
+      "by_horizon": {
+        "4": {
+          "target": "base_load_kw",
+          "horizon_steps": 4,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 20.1511,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.6093,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0535,
+              "calibration_error": 0.0035,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 1.0852,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0977,
+              "calibration_error": 0.0023,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.9917,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2651,
+              "calibration_error": 0.0151,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 2.5418,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4733,
+              "calibration_error": 0.0267,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 2.1466,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.714,
+              "calibration_error": 0.036,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 1.2632,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8686,
+              "calibration_error": 0.0314,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.7551,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9233,
+              "calibration_error": 0.0267,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "16": {
+          "target": "base_load_kw",
+          "horizon_steps": 16,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 20.4216,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.6036,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0507,
+              "calibration_error": 0.0007,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 1.0674,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.0873,
+              "calibration_error": 0.0127,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.9113,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2335,
+              "calibration_error": 0.0165,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 2.491,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4717,
+              "calibration_error": 0.0283,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 2.1656,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.6958,
+              "calibration_error": 0.0542,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 1.2332,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8785,
+              "calibration_error": 0.0215,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.7595,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9245,
+              "calibration_error": 0.0255,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "32": {
+          "target": "base_load_kw",
+          "horizon_steps": 32,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 20.0473,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.8486,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0637,
+              "calibration_error": 0.0137,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 1.543,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.119,
+              "calibration_error": 0.019,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 2.3704,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2488,
+              "calibration_error": 0.0012,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 2.8532,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.476,
+              "calibration_error": 0.024,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 2.13,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7488,
+              "calibration_error": 0.0012,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 1.2196,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8606,
+              "calibration_error": 0.0394,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.7475,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.9171,
+              "calibration_error": 0.0329,
+              "status": "CALIBRATED"
+            }
+          ]
+        },
+        "96": {
+          "target": "base_load_kw",
+          "horizon_steps": 96,
+          "overall_status": "CALIBRATED",
+          "mean_interval_width_90": 19.0348,
+          "per_quantile": [
+            {
+              "quantile": 0.05,
+              "pinball_loss": 0.6013,
+              "nominal_coverage": 0.05,
+              "empirical_coverage": 0.0534,
+              "calibration_error": 0.0034,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.1,
+              "pinball_loss": 1.0101,
+              "nominal_coverage": 0.1,
+              "empirical_coverage": 0.1016,
+              "calibration_error": 0.0016,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.25,
+              "pinball_loss": 1.8652,
+              "nominal_coverage": 0.25,
+              "empirical_coverage": 0.2539,
+              "calibration_error": 0.0039,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.5,
+              "pinball_loss": 2.3813,
+              "nominal_coverage": 0.5,
+              "empirical_coverage": 0.4948,
+              "calibration_error": 0.0052,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.75,
+              "pinball_loss": 1.9267,
+              "nominal_coverage": 0.75,
+              "empirical_coverage": 0.7578,
+              "calibration_error": 0.0078,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.9,
+              "pinball_loss": 1.1141,
+              "nominal_coverage": 0.9,
+              "empirical_coverage": 0.8815,
+              "calibration_error": 0.0185,
+              "status": "CALIBRATED"
+            },
+            {
+              "quantile": 0.95,
+              "pinball_loss": 0.7009,
+              "nominal_coverage": 0.95,
+              "empirical_coverage": 0.931,
+              "calibration_error": 0.019,
+              "status": "CALIBRATED"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "report": "CONTROL_REPORT",
+  "scenario": "NORMAL",
+  "rows": [
+    {
+      "controller": "no_control",
+      "bill_inr": 1040897.83,
+      "peak_kw": 2147.77,
+      "energy_kwh": 43883.88,
+      "comfort_violations": 0,
+      "carbon_kg": 31157.55,
+      "oracle_gap_pct": 80.56
+    },
+    {
+      "controller": "rule_based",
+      "bill_inr": 1101475.46,
+      "peak_kw": 2293.74,
+      "energy_kwh": 46192.59,
+      "comfort_violations": 133,
+      "carbon_kg": 32796.73,
+      "oracle_gap_pct": 91.07
+    },
+    {
+      "controller": "mean_mpc",
+      "bill_inr": 854369.31,
+      "peak_kw": 1676.69,
+      "energy_kwh": 39785.71,
+      "comfort_violations": 971,
+      "carbon_kg": 28247.87,
+      "oracle_gap_pct": 48.21
+    },
+    {
+      "controller": "quantile_mpc",
+      "bill_inr": 726800.83,
+      "peak_kw": 1300.6,
+      "energy_kwh": 40714.77,
+      "comfort_violations": 399,
+      "carbon_kg": 28907.49,
+      "oracle_gap_pct": 26.08
+    },
+    {
+      "controller": "oracle",
+      "bill_inr": 576476.7,
+      "peak_kw": 882.75,
+      "energy_kwh": 39669.67,
+      "comfort_violations": 76,
+      "carbon_kg": 28165.47,
+      "oracle_gap_pct": 0.0
+    }
+  ]
+}

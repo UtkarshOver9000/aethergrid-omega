@@ -1,0 +1,16 @@
+[project]
+name = "aethergrid"
+version = "0.1.0"
+description = "AETHERGRID Omega -- hierarchical, uncertainty-aware, safety-constrained electricity demand optimization for smart building ecosystems"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["aethergrid/tests"]
+pythonpath = ["."]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["aethergrid*"]

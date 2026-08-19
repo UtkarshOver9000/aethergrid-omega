@@ -1,0 +1,20 @@
+{
+  "world": {
+    "name": "Aethergrid_Colony_01",
+    "type": "colony",
+    "duration_days": 2,
+    "timestep_minutes": 15,
+    "seed": 7,
+    "start_date": "2026-01-05"
+  },
+  "tariff": {"id": "demo"},
+  "buildings": [
+    {"id": "C01_hospital", "type": "hospital", "criticality": 0.98},
+    {"id": "C02_residential", "type": "residential", "criticality": 0.5},
+    {"id": "C03_office", "type": "office", "criticality": 0.3},
+    {"id": "C04_retail", "type": "retail", "criticality": 0.2}
+  ],
+  "resources": {"solar": true, "battery": true, "thermal_storage": true, "ev": true, "dhw": true, "grid_capacity_kw": 380},
+  "events": [],
+  "connections": []
+}

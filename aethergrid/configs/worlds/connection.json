@@ -1,0 +1,25 @@
+{
+  "world": {
+    "name": "Aethergrid_Connection_01",
+    "type": "connection",
+    "duration_days": 2,
+    "timestep_minutes": 15,
+    "seed": 21,
+    "start_date": "2026-01-05"
+  },
+  "tariff": {"id": "demo"},
+  "buildings": [
+    {"id": "N01_hospital", "type": "hospital"},
+    {"id": "N02_hotel", "type": "hotel"},
+    {"id": "N03_office", "type": "office"},
+    {"id": "N04_residential", "type": "residential"},
+    {"id": "N05_retail", "type": "retail"}
+  ],
+  "resources": {"solar": true, "battery": true, "thermal_storage": true, "ev": true, "dhw": true, "grid_capacity_kw": null},
+  "events": [],
+  "connections": [
+    {"source": "N01_hospital", "sink": "N02_hotel", "kind": "thermal_match"},
+    {"source": "N03_office", "sink": "N04_residential", "kind": "flexibility_match"},
+    {"source": "N03_office", "sink": "N05_retail", "kind": "solar_load_match"}
+  ]
+}

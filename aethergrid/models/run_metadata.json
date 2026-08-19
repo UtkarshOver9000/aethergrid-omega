@@ -1,0 +1,6 @@
+{
+  "backend": "stable_baselines3.PPO",
+  "fallback": false,
+  "total_timesteps": 40000,
+  "model_path": "aethergrid\\models\\ppo_office.zip"
+}
