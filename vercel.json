@@ -4,9 +4,17 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "viz/dist/index.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/worldsim",
+      "dest": "/viz/dist/index.html"
+    },
     {
       "src": "/(.*)",
       "dest": "api/index.py"

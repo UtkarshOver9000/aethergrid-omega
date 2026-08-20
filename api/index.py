@@ -82,11 +82,12 @@ HTML = b"""<!DOCTYPE html>
       agent-based World simulation, MPC/RL controllers, and a 3-D visualisation
       engine.
     </p>
-    <a class="btn" href="https://github.com/UtkarshOver9000/aethergrid-omega"
-       target="_blank" rel="noopener">View on GitHub</a>
+    <a class="btn" href="/worldsim">Launch 3D World Viewer</a>
     <p class="note">
-      The interactive Streamlit dashboard requires a persistent server.<br/>
-      Run locally: <code>streamlit run aethergrid/ui/app.py</code>
+      Or <a href="https://github.com/UtkarshOver9000/aethergrid-omega"
+      target="_blank" rel="noopener">view the source on GitHub</a>.<br/>
+      The full interactive Streamlit dashboard requires a persistent server &mdash;
+      run locally: <code>streamlit run aethergrid/ui/app.py</code>
     </p>
   </div>
 </body>
