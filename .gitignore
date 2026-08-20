@@ -17,6 +17,9 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Claude Code internal scratch (plan-mode agent worktrees)
+.claude/worktrees/
+
 # Data caches (raw/processed are populated at runtime if ever used; synthetic/ is generated in-process, not on disk)
 aethergrid/data/raw/*
 aethergrid/data/processed/*
