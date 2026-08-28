@@ -44,13 +44,17 @@ class SocietyResult:
     curtailed_ids_by_tick: list
     total_curtailed_kwh_by_tick: np.ndarray
     active_events_by_tick: list
+    community_solar_kw: np.ndarray
+    override_ids_by_tick: list
 
 
 def _assign_grid_positions(n: int, cols: int) -> list[tuple[int, int]]:
     return [(i % cols, i // cols) for i in range(n)]
 
 
-def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_seed: int) -> SocietyResult:
+def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_seed: int,
+                      enable_curtailment: bool = True, enable_solar_sync: bool = False,
+                      community_solar_kwp: float = 0.0) -> SocietyResult:
     rng = np.random.default_rng(base_seed)
     start = pd.Timestamp(scenario.date)
     env = build_environment(start, scenario.n_steps, scenario.interval_minutes, seed=base_seed,
@@ -79,8 +83,17 @@ def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_
         arch = HOUSEHOLD_ARCHETYPES[cfg.archetype_name]
         s = simulate_household(cfg, arch, env, dt_hours, curtail_mask=None,
                                 occupancy_multiplier=effects.occupancy_multiplier,
-                                force_ev_present=effects.force_ev_present)
+                                force_ev_present=effects.force_ev_present,
+                                enable_solar_sync=enable_solar_sync)
         baseline_series.append(s)
+
+    # --- shared community solar station: same physical formula as rooftop
+    # solar (household.py), one big generator instead of many small ones.
+    # Zero by default so societies without one are unaffected.
+    community_solar_kw = np.zeros(scenario.n_steps)
+    if community_solar_kwp > 0:
+        irradiance_factor = np.clip(env.ghi_wm2 / 1000.0, 0, 1.3) * (1 - 0.6 * env.cloud_factor)
+        community_solar_kw = np.where(env.sun_altitude > 0, community_solar_kwp * irradiance_factor * 0.9, 0.0)
 
     n_steps = scenario.n_steps
     kw_matrix = np.stack([s.kw for s in baseline_series], axis=1)
@@ -109,7 +122,7 @@ def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_
         society.transformer, society.common_infra, kw_matrix, flex_matrix,
         common_infra_series.kw, common_infra_series.pump_on, common_infra_series.lift_active,
         common_infra_series.streetlights_on, common_infra_series.stp_on, common_infra_series.clubhouse_hvac_kw,
-        workspace_kw,
+        workspace_kw, enable_curtailment=enable_curtailment, community_solar_kw=community_solar_kw,
     )
 
     # force outage windows to TRIPPED / zero grid regardless of computed loading
@@ -143,7 +156,8 @@ def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_
         mask = decision.house_curtail_mask[:, hid] | effects.outage_mask
         final_series[hid] = simulate_household(cfg, arch, env, dt_hours, curtail_mask=mask,
                                                  occupancy_multiplier=effects.occupancy_multiplier,
-                                                 force_ev_present=effects.force_ev_present)
+                                                 force_ev_present=effects.force_ev_present,
+                                                 enable_solar_sync=enable_solar_sync)
 
     # during an outage, ALL non-critical households lose grid supply too (their own
     # solar/battery can still serve local load, simulate_household already nets that)
@@ -154,7 +168,16 @@ def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_
                 arch = HOUSEHOLD_ARCHETYPES[cfg.archetype_name]
                 final_series[hid] = simulate_household(cfg, arch, env, dt_hours, curtail_mask=effects.outage_mask,
                                                          occupancy_multiplier=effects.occupancy_multiplier,
-                                                         force_ev_present=effects.force_ev_present)
+                                                         force_ev_present=effects.force_ev_present,
+                                                         enable_solar_sync=enable_solar_sync)
+
+    # Real override events: houses that were told to shed and kept running
+    # anyway. Recorded per tick from the engine's own decision, replacing what
+    # used to be a hardcoded empty list in the export layer.
+    override_ids_by_tick = [
+        [hid for hid, s in enumerate(final_series) if s.overrode[t]]
+        for t in range(n_steps)
+    ]
 
     return SocietyResult(
         index=env.index, environment=env, dt_hours=dt_hours, house_configs=configs, house_series=final_series,
@@ -163,4 +186,6 @@ def simulate_society(scenario: WorldSimScenario, society: SocietyScenario, base_
         outage_mask=effects.outage_mask, curtailed_ids_by_tick=decision.curtailed_house_ids_by_tick,
         total_curtailed_kwh_by_tick=decision.total_curtailed_kwh_by_tick,
         active_events_by_tick=effects.active_event_ids_by_tick,
+        community_solar_kw=community_solar_kw,
+        override_ids_by_tick=override_ids_by_tick,
     )

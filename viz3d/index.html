@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>AETHERGRID — Colony Coordination Sim</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg:#020408; --panel:#060a12; --panel-2:#0a1120; --panel-3:#050810; --border:#16233a; --border-glow:#1c3350;
+  --text:#dfe9f5; --muted:#5f7290; --accent:#39e0ff; --accent-2:#a06bff; --accent-dim:#175a68;
+  --ok:#2fe6a0; --warn:#ffc857; --crit:#ff6a6a; --tripped:#ff3d5d; --gold:#e8b23d;
+  --radius:3px;
+}
+:root[data-theme="gold"] { --accent:#e8b23d; --accent-2:#ffd97a; --border:#2a2210; --border-glow:#4a3a12; }
+:root[data-theme="crimson"] { --accent:#ff4d6a; --accent-2:#ff9bb0; --border:#2a1219; --border-glow:#4a1a26; }
+:root[data-theme="silver"] { --accent:#d7e1ee; --accent-2:#93aecf; --border:#1b2230; --border-glow:#2a3546; }
+:root[data-theme="mono"] { --accent:#f1f1f4; --accent-2:#9a9aa4; --border:#1c1c22; --border-glow:#2c2c34; }
+.theme-picker { display:flex; gap:5px; flex:none; align-items:center; }
+.theme-picker button { width:15px; height:15px; border-radius:50%; border:1px solid var(--border); background:var(--sw); padding:0; }
+.theme-picker button.active { box-shadow:0 0 0 2px var(--bg), 0 0 0 3px var(--sw); }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; padding:0; height:100%; overflow:hidden; overscroll-behavior:none; }
+body {
+  background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Mono", ui-monospace, monospace;
+  display:flex; flex-direction:column; height:100vh;
+  background-image:
+    linear-gradient(rgba(57,224,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57,224,255,.025) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+.mono { font-variant-numeric:tabular-nums; }
+h1,h2,h3 { font-family:"Rajdhani", sans-serif; margin:0; }
+button { font-family:inherit; cursor:pointer; }
+button:focus-visible, input:focus-visible { outline:1px solid var(--accent); outline-offset:1px; }
+::-webkit-scrollbar { width:6px; height:0; }
+::-webkit-scrollbar-thumb { background:var(--border-glow); border-radius:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+
+/* ---------------- top bar ---------------- */
+.topbar {
+  display:flex; align-items:center; gap:12px; padding:9px 16px;
+  background:var(--panel); border-bottom:1px solid var(--border);
+  position:relative; z-index:6; flex:none;
+  box-shadow:0 1px 0 var(--border-glow);
+}
+.brand { display:flex; align-items:center; gap:10px; margin-right:2px; flex:none; }
+.brand .dot { width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px 2px var(--accent); flex:none; animation:blink 2.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.45} }
+.brand-text { display:flex; flex-direction:column; line-height:1.1; }
+.brand h1 { font-size:16px; font-weight:700; letter-spacing:.06em; color:var(--accent); text-shadow:0 0 12px rgba(57,224,255,.35); }
+.brand span { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; }
+
+/* Scenario + camera buttons are the primary controls: they must never be the
+   thing that gets squeezed out. min-width:0 let this collapse to literally
+   zero width once enough secondary chrome was added to the topbar, so it now
+   keeps a floor and the optional top-links drop away first (see below). */
+.bar-scroll { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; flex:1 1 auto; min-width:300px; }
+.bar-scroll::-webkit-scrollbar { display:none; }
+/* progressive disclosure: shed secondary topbar chrome before primary controls */
+@media (max-width:1400px) { .topbar .theme-picker { display:none; } }
+@media (max-width:1300px) { #presentBtn { display:none; } }
+@media (max-width:1200px) { .topbar .top-link[href] { display:none; } }
+@media (max-width:1080px) { .topbar .status-chip { display:none; } }
+
+.seg { display:flex; gap:2px; background:var(--panel-3); border:1px solid var(--border); border-radius:var(--radius); padding:2px; flex:none; }
+.seg button { border:none; background:transparent; color:var(--muted); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; padding:6px 9px; border-radius:2px; white-space:nowrap; transition:background .12s,color .12s,box-shadow .12s; }
+.seg button.active { background:rgba(57,224,255,.14); color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+.seg button.active.alt { background:rgba(160,107,255,.16); color:var(--accent-2); box-shadow:inset 0 0 0 1px var(--accent-2); }
+.seg button:not(.active):hover { color:var(--text); background:rgba(255,255,255,.04); }
+
+.spacer { flex:1 1 auto; }
+.top-link {
+  display:inline-flex; align-items:center; gap:6px; border:1px solid var(--border); background:var(--panel-3);
+  color:var(--text); border-radius:var(--radius); padding:7px 12px; font-size:11px; font-weight:600; text-decoration:none;
+  text-transform:uppercase; letter-spacing:.04em; flex:none;
+}
+.top-link:hover { border-color:var(--gold, var(--accent)); color:var(--gold, var(--accent)); }
+.top-link.active { border-color:var(--gold, var(--accent)); color:var(--gold, var(--accent)); background:rgba(232,178,61,.12); }
+button.top-link { font-family:inherit; }
+
+body.presenting .stage-hint, body.presenting .legend, body.presenting .theme-picker { display:none; }
+body.presenting .kpi .value { font-size:22px; }
+body.presenting .kpi .label { font-size:11px; }
+body.presenting .rail-section h2 { font-size:12px; }
+.status-chip {
+  display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.06em;
+  padding:6px 11px; border-radius:var(--radius); background:var(--panel-3); border:1px solid var(--border); color:var(--muted); flex:none;
+}
+.status-dot { width:6px; height:6px; border-radius:50%; background:var(--ok); box-shadow:0 0 6px 1px var(--ok); }
+.rail-toggle {
+  display:none; align-items:center; gap:6px; border:1px solid var(--border); background:var(--panel-3);
+  color:var(--text); border-radius:var(--radius); padding:7px 12px; font-size:11px; font-weight:600; flex:none;
+}
+.rail-toggle svg { width:14px; height:14px; }
+
+/* ---------------- main layout ---------------- */
+.main { flex:1; display:flex; min-height:0; position:relative; }
+.stage { flex:1; position:relative; min-width:0; background:#010203; }
+#stageCanvas { display:block; width:100%; height:100%; touch-action:none; cursor:grab; }
+#stageCanvas:active { cursor:grabbing; }
+
+#loadingHint {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--muted); background:var(--panel-3); z-index:3; flex-direction:column; gap:12px;
+}
+#loadingHint .mark { width:10px; height:10px; background:var(--accent); box-shadow:0 0 18px 4px var(--accent); animation:pulse 1.2s ease-in-out infinite; }
+#loadingHint .txt { font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; }
+#loadingHint .bar { width:200px; height:2px; background:var(--panel-2); overflow:hidden; }
+#loadingHint .bar i { display:block; height:100%; width:30%; background:var(--accent); animation:load 1.1s ease-in-out infinite; }
+@keyframes load { 0%{margin-left:-30%} 100%{margin-left:100%} }
+@keyframes pulse { 0%,100%{transform:scale(1); opacity:1} 50%{transform:scale(2.2); opacity:.4} }
+
+.hidden { display:none !important; }
+
+.whatif-panel {
+  position:absolute; left:12px; bottom:12px; width:280px; z-index:2;
+  background:var(--panel); border:1px solid var(--gold); border-radius:var(--radius);
+  padding:11px 12px; box-shadow:0 0 18px rgba(232,178,61,.12);
+}
+.whatif-panel h3 { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--gold); margin-bottom:8px; }
+.whatif-row { display:flex; gap:5px; margin-bottom:8px; }
+.whatif-row button { flex:1; border:1px solid var(--border); background:var(--panel-3); color:var(--muted); font-size:10.5px; font-weight:600; padding:6px 4px; border-radius:2px; }
+.whatif-row button.active { border-color:var(--gold); color:var(--gold); background:rgba(232,178,61,.12); }
+.whatif-row.ai button[data-ai="1"].active { border-color:var(--ok); color:var(--ok); background:rgba(47,230,160,.12); }
+.whatif-row.ai button[data-ai="0"].active { border-color:var(--tripped); color:var(--tripped); background:rgba(255,61,93,.12); }
+.whatif-row.solar button[data-sync="1"].active { border-color:var(--gold); color:var(--gold); background:rgba(232,178,61,.12); }
+.whatif-row.solar.disabled { opacity:.4; pointer-events:none; }
+.whatif-readout { font-size:10px; color:var(--muted); line-height:1.5; }
+.whatif-readout b { color:var(--text); }
+
+.stage-hint {
+  position:absolute; left:12px; top:12px; font-size:10px; color:var(--muted);
+  background:var(--panel); border:1px solid var(--border); padding:6px 10px; border-radius:var(--radius);
+  pointer-events:none; z-index:2; text-transform:uppercase; letter-spacing:.03em;
+}
+.legend {
+  position:absolute; right:12px; top:12px; display:flex; flex-direction:column; gap:4px;
+  background:var(--panel); border:1px solid var(--border); padding:8px 10px; border-radius:var(--radius);
+  font-size:10px; color:var(--muted); z-index:2;
+}
+.legend b { color:var(--accent); font-size:9px; text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:3px; }
+.legend-row { display:flex; align-items:center; gap:6px; }
+.legend-swatch { width:7px; height:7px; border-radius:1px; flex:none; box-shadow:0 0 5px currentColor; }
+
+/* ---------------- right rail ---------------- */
+.rail-scrim { position:fixed; inset:0; background:rgba(1,2,4,.7); z-index:4; opacity:0; pointer-events:none; transition:opacity .18s; }
+.rail-scrim.open { opacity:1; pointer-events:auto; }
+
+.rail {
+  width:322px; flex:none; background:var(--panel);
+  border-left:1px solid var(--border);
+  display:flex; flex-direction:column; z-index:5; min-height:0;
+}
+.rail-head { display:flex; align-items:center; border-bottom:1px solid var(--border); flex:none; }
+/* six tabs have to share the rail head. flex:1 alone kept each item at its
+   content width (min-width defaults to auto), so the last tab was clipped
+   off the right edge once District and Analysis were added. min-width:0 lets
+   them actually shrink, and the overflow-x is a fallback for narrow rails. */
+.rail-tabs { display:flex; flex:1; min-width:0; overflow-x:auto; scrollbar-width:none; }
+.rail-tabs::-webkit-scrollbar { display:none; }
+.rail-tab { flex:1 1 0; min-width:0; white-space:nowrap; border:none; background:transparent; color:var(--muted); font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; padding:11px 3px; border-bottom:2px solid transparent; }
+.rail-tab.active { color:var(--accent); border-bottom-color:var(--accent); text-shadow:0 0 8px rgba(57,224,255,.4); }
+.rail-close { display:none; border:none; background:transparent; color:var(--muted); width:36px; font-size:18px; flex:none; }
+
+.rail-panel { flex:1; overflow-y:auto; min-height:0; }
+.rail-panel.hidden { display:none; }
+
+.rail-section { padding:13px 16px; border-bottom:1px solid var(--border); }
+.rail-section h2 { font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-bottom:9px; }
+.kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.kpi { background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius); padding:9px 10px; }
+.kpi .label { font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.kpi .value { font-size:16px; font-weight:600; margin-top:2px; letter-spacing:-.01em; color:var(--text); }
+.kpi .sub { font-size:9.5px; color:var(--muted); margin-top:1px; }
+.pill { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 8px; border-radius:2px; }
+.pill.NORMAL { background:rgba(47,230,160,.14); color:var(--ok); box-shadow:inset 0 0 0 1px rgba(47,230,160,.3); }
+.pill.WARNING { background:rgba(255,200,87,.14); color:var(--warn); box-shadow:inset 0 0 0 1px rgba(255,200,87,.3); }
+.pill.CRITICAL { background:rgba(255,200,87,.18); color:var(--warn); box-shadow:inset 0 0 0 1px rgba(255,200,87,.4); }
+.pill.BREACH,.pill.TRIPPED { background:rgba(255,61,93,.16); color:var(--tripped); box-shadow:inset 0 0 0 1px rgba(255,61,93,.4); }
+.bar-track { height:6px; border-radius:2px; background:var(--panel-3); border:1px solid var(--border); overflow:hidden; margin-top:8px; }
+.bar-fill { height:100%; transition:width .25s ease, background .25s; }
+
+.inspector-empty { font-size:11.5px; color:var(--muted); line-height:1.55; }
+.inspector-house.fresh { animation:fadein .18s ease; }
+@keyframes fadein { from{opacity:0} to{opacity:1} }
+.inspector-house h3 { font-size:14px; margin-bottom:2px; color:var(--accent); }
+.inspector-house .archetype { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-bottom:9px; }
+.stat-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px dashed var(--border); font-size:11.5px; }
+.stat-row:last-child { border-bottom:none; }
+.stat-row .k { color:var(--muted); }
+.stat-row .v { font-weight:600; }
+.badges { display:flex; gap:5px; flex-wrap:wrap; margin:7px 0 2px 0; }
+.badge { font-size:9px; font-weight:700; text-transform:uppercase; padding:3px 7px; border-radius:2px; background:var(--panel-2); border:1px solid var(--border); color:var(--muted); }
+.badge.on { background:rgba(57,224,255,.14); color:var(--accent); border-color:rgba(57,224,255,.4); }
+.spark { width:100%; height:32px; margin-top:8px; display:block; }
+.cost-box { margin-top:10px; padding:10px 11px; background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius); }
+.cost-box h4 { font-size:9.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--accent); margin-bottom:7px; }
+.cost-box .note { font-size:9px; color:var(--muted); margin-top:7px; line-height:1.5; }
+.cost-split { display:flex; height:5px; border-radius:2px; overflow:hidden; margin:6px 0; }
+.save-box { margin-top:9px; padding:9px 10px; background:rgba(160,107,255,.06); border:1px solid rgba(160,107,255,.28); border-radius:var(--radius); }
+.save-box h4 { font-size:9.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--accent-2); margin-bottom:5px; }
+.save-box .v { font-size:15px; font-weight:700; color:var(--accent-2); }
+
+.events-list { display:flex; flex-direction:column; gap:6px; font-size:11px; }
+.event-row { display:flex; justify-content:space-between; padding:6px 9px; background:var(--panel-2); border-radius:var(--radius); border:1px solid var(--border); }
+.event-row .t { color:var(--muted); font-size:9.5px; }
+
+.about h3 { font-size:12px; margin-bottom:6px; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; }
+.about p { font-size:11px; color:var(--muted); line-height:1.6; margin:0 0 14px 0; }
+.about p b { color:var(--text); }
+.about p i { color:var(--text); }
+
+/* ---------------- Grid Brain tab ---------------- */
+.node-map { padding:14px 16px; border-bottom:1px solid var(--border); }
+.node-row { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; margin-bottom:6px; background:var(--panel-2); border:1px solid var(--border); border-radius:var(--radius); font-size:11px; }
+.node-row-jump { cursor:pointer; transition:border-color .12s, background .12s; }
+.node-row-jump:hover { border-color:var(--accent); background:rgba(255,255,255,.03); }
+.node-row .nname { font-weight:700; color:var(--text); }
+.node-row .nstate { font-size:9.5px; padding:2px 7px; border-radius:2px; text-transform:uppercase; }
+#dispatch { position:absolute; top:12px; left:50%; transform:translateX(-50%); z-index:5; display:flex; align-items:center; gap:10px;
+  background:rgba(30,4,9,.92); border:1px solid var(--tripped); border-radius:var(--radius); padding:8px 14px; font-size:10.5px; color:var(--text); }
+#dispatch b { display:block; color:var(--tripped); letter-spacing:.08em; font-size:11px; }
+#dispatch span { color:var(--muted); }
+#dispatch i { display:block; color:var(--muted); font-size:8.5px; font-style:normal; opacity:.8; margin-top:2px; }
+.dsp-dot { width:9px; height:9px; border-radius:50%; background:var(--tripped); box-shadow:0 0 10px 2px var(--tripped); animation:blink 1s ease-in-out infinite; flex:none; }
+#coach { position:absolute; inset:0; z-index:8; background:rgba(2,4,8,.72); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.coach-card { max-width:400px; background:var(--panel); border:1px solid var(--accent); border-radius:var(--radius); padding:20px 22px; box-shadow:0 0 34px rgba(57,224,255,.2); }
+.coach-card h3 { color:var(--accent); font-size:15px; letter-spacing:.06em; text-transform:uppercase; margin-bottom:10px; }
+.coach-card ol { margin:0; padding-left:17px; color:var(--muted); font-size:11px; line-height:1.7; }
+.coach-card b { color:var(--text); }
+.coach-dismiss { display:block; margin-top:12px; font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); }
+/* The day-trend lives above the scrubber rather than in the topbar: it shares
+   the scrubber's time axis, so it reads as the shape of the timeline, and the
+   topbar no longer has to squeeze the scenario buttons to fit it. */
+#topSpark { display:block; width:100%; height:34px; background:transparent; }
+@media (max-width:860px) { #topSpark { height:24px; } }
+.tl { display:flex; gap:0; margin:8px 0 4px; }
+.tl-item { flex:1; text-align:center; font-size:8.5px; color:var(--muted); position:relative; padding-top:13px; }
+.tl-item::before { content:""; position:absolute; top:4px; left:50%; width:7px; height:7px; margin-left:-3.5px; border-radius:50%; background:var(--border-glow); }
+.tl-item.done::before { background:var(--ok); }
+.tl-item.now::before { background:var(--gold); box-shadow:0 0 0 3px rgba(232,178,61,.25); }
+.tl-item b { display:block; color:var(--text); font-size:9.5px; }
+.tl-line { height:1px; background:var(--border); margin:0 12px; position:relative; top:8px; }
+/* --- district readouts --- */
+.drow { display:grid; grid-template-columns:1fr auto auto; gap:10px; align-items:center; padding:5px 0; border-bottom:1px solid var(--border); font-size:10.5px; }
+.drow:last-child { border-bottom:none; }
+.drow .dk { color:var(--muted); }
+.drow .dv { min-width:64px; text-align:right; font-size:11px; font-weight:600; }
+.drow.dhead { border-bottom:1px solid var(--border-glow); padding-bottom:7px; margin-bottom:3px; font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; }
+.drow.dhead .dk { color:var(--text); font-weight:700; }
+.heatmap { display:flex; flex-direction:column; gap:2px; }
+.hm-row { display:flex; align-items:center; gap:6px; cursor:pointer; }
+.hm-row:hover { background:var(--panel-2); }
+.hm-label { flex:0 0 84px; font-size:8.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hm-cells { flex:1; display:flex; gap:0; height:9px; }
+.hm-cells i { flex:1; height:100%; }
+.hm-cells i.n { background:rgba(47,230,160,.42); }
+.hm-cells i.w { background:var(--warn); }
+.hm-cells i.c { background:#ff9a3d; }
+.hm-cells i.b, .hm-cells i.t { background:var(--tripped); }
+.hm-cells i.now { outline:1px solid var(--text); outline-offset:-1px; }
+.deploy-btn { width:100%; margin-top:9px; padding:9px; border-radius:var(--radius); border:1px solid var(--gold); background:rgba(232,178,61,.12); color:var(--gold); font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+.deploy-btn:hover { background:rgba(232,178,61,.22); }
+.deploy-btn.undo { border-color:var(--border-glow); color:var(--muted); background:var(--panel-3); }
+.ledger { display:flex; flex-direction:column-reverse; gap:0; max-height:340px; overflow-y:auto; font-size:10.5px; }
+.ledger-row { padding:7px 12px; border-bottom:1px solid var(--border); line-height:1.5; }
+.ledger-row .lt { color:var(--muted); font-size:9px; margin-right:6px; }
+.ledger-row.rec { color:var(--accent-2); }
+.ledger-row.act { color:var(--accent); }
+.ledger-empty { padding:14px 16px; font-size:11px; color:var(--muted); }
+
+/* ---------------- bottom timeline ---------------- */
+.timeline {
+  background:var(--panel); border-top:1px solid var(--border); padding:9px 16px 11px 16px;
+  display:flex; flex-direction:column; gap:8px; flex:none; z-index:6;
+  box-shadow:0 -1px 0 var(--border-glow);
+}
+.timeline-controls { display:flex; align-items:center; gap:10px; }
+.play-btn { width:32px; height:32px; border-radius:50%; border:1px solid var(--accent); background:rgba(57,224,255,.12); color:var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; flex:none; box-shadow:0 0 12px rgba(57,224,255,.25); }
+.speed-group { display:flex; gap:4px; flex:none; }
+.speed-btn { border:1px solid var(--border); background:var(--panel-3); color:var(--muted); font-size:10px; font-weight:600; padding:5px 8px; border-radius:2px; }
+.speed-btn.active { background:rgba(160,107,255,.16); color:var(--accent-2); box-shadow:inset 0 0 0 1px var(--accent-2); }
+.time-label { font-size:11px; color:var(--muted); min-width:58px; flex:none; }
+input[type="range"] { flex:1; accent-color:var(--accent); min-width:60px; }
+.date-label { font-size:10px; color:var(--muted); flex:none; }
+
+@media (max-width:860px) {
+  .rail { position:fixed; right:0; top:0; bottom:0; width:88vw; max-width:380px; transform:translateX(100%); transition:transform .22s ease; }
+  .rail.open { transform:translateX(0); }
+  .rail-close { display:block; }
+  .rail-toggle { display:inline-flex; }
+  .brand span { display:none; }
+  .legend { display:none; }
+  .timeline-controls { flex-wrap:wrap; row-gap:8px; }
+  .time-label, .date-label { min-width:0; }
+  input[type="range"] { order:5; flex-basis:100%; }
+}
+@media (max-width:520px) {
+  .topbar { padding:8px 10px; gap:8px; }
+  .brand h1 { font-size:14px; }
+  .stage-hint { display:none; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="dot"></span><div class="brand-text"><h1>AETHERGRID</h1><span>GridBrain colony coordination layer</span></div></div>
+  <div class="bar-scroll">
+    <div class="seg" id="scenarioGroup"></div>
+    <div class="seg" id="camGroup">
+      <button class="active" data-cam="orbit">Orbit</button>
+      <button data-cam="top">Top-down</button>
+      <button data-cam="colony">Colony</button>
+      <button data-cam="district">District</button>
+    </div>
+  </div>
+  <button class="top-link" id="resetBtn" title="Reset everything to defaults (R)">&#8635; Reset</button>
+  <button class="top-link" id="presentBtn" title="Presentation mode (P)">Present</button>
+  <a class="top-link" href="../commercial3d/index.html" target="_blank" rel="noopener">Commercial pitch &rarr;</a>
+  <div class="theme-picker" id="themePicker">
+    <button data-theme="cyan" class="active" title="Cyan" style="--sw:#39e0ff"></button>
+    <button data-theme="gold" title="Gold" style="--sw:#e8b23d"></button>
+    <button data-theme="crimson" title="Crimson" style="--sw:#ff4d6a"></button>
+    <button data-theme="silver" title="Silver" style="--sw:#d7e1ee"></button>
+    <button data-theme="mono" title="Black &amp; white" style="--sw:#f1f1f4"></button>
+  </div>
+  <div class="status-chip"><span class="status-dot" id="gridDot"></span><span id="gridLabel">GRID NORMAL</span></div>
+  <button class="rail-toggle" id="railToggle">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
+    Panel
+  </button>
+</div>
+
+<div class="main">
+  <div class="stage">
+    <canvas id="stageCanvas"></canvas>
+    <div id="loadingHint"><div class="mark"></div><div class="txt">Booting colony…</div><div class="bar"><i></i></div></div>
+    <div class="stage-hint">Drag / one-finger to orbit &middot; scroll or pinch to zoom &middot; tap a house, transformer, or the GridBrain hub</div>
+    <div class="legend">
+      <b>Reading the scene</b>
+      <div class="legend-row"><span class="legend-swatch" style="background:#39e0ff;color:#39e0ff"></span>window glow = load</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#2fe6a0;color:#2fe6a0"></span>panel glow = solar</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#a06bff;color:#a06bff"></span>ring pulse = EV charging</div>
+      <div class="legend-row"><span class="legend-swatch" style="background:#ff6a6a;color:#ff6a6a"></span>ground ring = curtailed</div>
+    </div>
+    <div class="whatif-panel">
+      <h3>What-if &middot; Society A</h3>
+      <div class="whatif-row" id="whatifEvGroup">
+        <button data-ev="20">EV 20%</button>
+        <button data-ev="40">EV 40%</button>
+        <button data-ev="75">EV 75%</button>
+      </div>
+      <div class="whatif-row ai" id="whatifAiGroup">
+        <button data-ai="0">AI Coordinator OFF</button>
+        <button data-ai="1" class="active">AI Coordinator ON</button>
+      </div>
+      <div class="whatif-row solar disabled" id="whatifSyncGroup" title="Requires AI Coordinator ON">
+        <button data-sync="0" class="active">Solar sync OFF</button>
+        <button data-sync="1">Solar sync ON</button>
+      </div>
+      <div class="whatif-readout" id="whatifCapex">Pick an EV level to watch the AI Coordinator hold the line in real, pre-simulated data — not a fudge-factor slider.</div>
+    </div>
+  </div>
+  <div id="dispatch" class="hidden">
+    <div class="dsp-dot"></div>
+    <div><b>TRANSFORMER TRIPPED</b><span id="dispatchTime">--</span>
+    <i>Illustrative only &mdash; restoration and crew movement are not simulated.</i></div>
+  </div>
+  <div id="coach" class="hidden">
+    <div class="coach-card">
+      <h3>Three things to try</h3>
+      <ol>
+        <li><b>District &middot; 24</b> &mdash; 24 real societies, 6 running under GridBrain. Click any one to deploy or remove it.</li>
+        <li><b>What-if panel</b> (bottom left) &mdash; flip the AI Coordinator off at EV 75% and watch the transformer trip.</li>
+        <li><b>Analysis / Solar tabs</b> &mdash; the duck curve, who pays the comfort cost, and what solar does and doesn't do.</li>
+      </ol>
+      <span class="coach-dismiss">click anywhere to dismiss</span>
+    </div>
+  </div>
+  <div class="rail-scrim" id="railScrim"></div>
+  <div class="rail" id="rail">
+    <div class="rail-head">
+      <div class="rail-tabs">
+        <button class="rail-tab active" data-tab="live">Live</button>
+        <button class="rail-tab" data-tab="brain">GridBrain</button>
+        <button class="rail-tab" data-tab="solar">Solar</button>
+        <button class="rail-tab" data-tab="district">District</button>
+        <button class="rail-tab" data-tab="analysis">Analysis</button>
+        <button class="rail-tab" data-tab="about">Data</button>
+      </div>
+      <button class="rail-close" id="railClose" aria-label="Close panel">&times;</button>
+    </div>
+
+    <div class="rail-panel" id="tabLive">
+      <div class="rail-section">
+        <h2>Transformer — Society A</h2>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">Loading</div><div class="value mono" id="kpiKva">-- kVA</div><div class="sub" id="kpiKvaPct">--%</div></div>
+          <div class="kpi"><div class="label">State</div><div class="value" id="kpiState"><span class="pill NORMAL">NORMAL</span></div><div class="sub" id="kpiRating">rated -- kVA</div></div>
+          <div class="kpi"><div class="label">Curtailed</div><div class="value mono" id="kpiCurtailed">0</div><div class="sub">households</div></div>
+          <div class="kpi"><div class="label">Peak today</div><div class="value mono" id="kpiPeak">-- kVA</div><div class="sub" id="kpiPeakTime">--:--</div></div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" id="kvaBar" style="width:0%;background:var(--ok)"></div></div>
+      </div>
+      <div class="rail-section">
+        <h2>Environment</h2>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">Outdoor</div><div class="value mono" id="kpiTemp">--&deg;C</div><div class="sub" id="kpiHumidity">-- % RH</div></div>
+          <div class="kpi"><div class="label">Solar</div><div class="value mono" id="kpiSolar">-- kW</div><div class="sub" id="kpiCloud">cloud --%</div></div>
+        </div>
+      </div>
+      <div class="rail-section">
+        <h2>Inspector</h2>
+        <div id="inspector"><div class="inspector-empty">Tap any house, the workspace, or a transformer in the scene to see its live state.</div></div>
+      </div>
+      <div class="rail-section">
+        <h2>Scenario events</h2>
+        <div class="events-list" id="eventsList"></div>
+      </div>
+    </div>
+
+    <div class="rail-panel hidden" id="tabBrain">
+      <div class="node-map" id="nodeMap"></div>
+      <div class="rail-section" style="padding:0; border-bottom:none;">
+        <h2 style="padding:13px 16px 0 16px;">Decision ledger — live, sourced from real sub-meter &amp; curtailment state</h2>
+        <div class="ledger" id="ledger"><div class="ledger-empty">Watching all three transformers…</div></div>
+      </div>
+    </div>
+
+    <div class="rail-panel hidden" id="tabSolar">
+      <div class="rail-section" id="solarHeadline">
+        <h2>Solar &middot; Society A</h2>
+        <div class="inspector-empty">Pick an EV level in the What-if panel to load solar data for that setting.</div>
+      </div>
+      <div class="rail-section" id="solarTable"></div>
+    </div>
+
+    <div class="rail-panel hidden" id="tabDistrict">
+      <div class="rail-section" id="districtScore"></div>
+      <div class="rail-section" id="districtAdoption"></div>
+      <div class="rail-section" id="districtAttribution"></div>
+      <div class="rail-section" id="districtHeatmap"></div>
+      <div class="rail-section" id="districtLeague"></div>
+    </div>
+
+    <div class="rail-panel hidden" id="tabAnalysis">
+      <div class="rail-section" id="anDuck"></div>
+      <div class="rail-section" id="anComfort"></div>
+      <div class="rail-section" id="anAging"></div>
+      <div class="rail-section" id="anCarbon"></div>
+      <div class="rail-section" id="anCapex"></div>
+    </div>
+
+    <div class="rail-panel hidden" id="tabAbout">
+      <div class="rail-section about">
+        <h3>Policy tailwind &mdash; RDSS</h3>
+        <p>The Revamped Distribution Sector Scheme is the Government of India's &#8377;3.03 lakh crore distribution programme, sanctioned 2021, running to <b>FY 2025&ndash;26</b>. Its smart-metering component targets ~250 million prepaid smart meters plus feeder and distribution-transformer metering &mdash; the exact measurement layer this system consumes.</p>
+        <div class="tl">
+          <div class="tl-item done"><b>2021</b>Scheme sanctioned</div>
+          <div class="tl-item done"><b>2023</b>Meter tenders at scale</div>
+          <div class="tl-item now"><b>2025&ndash;26</b>Scheme end-date</div>
+          <div class="tl-item"><b>Post-26</b>DT-level optimisation</div>
+        </div>
+        <p class="note">Public, checkable milestones &mdash; stated so the claim can be verified rather than taken on trust. We are not affiliated with the scheme; it is cited as market context for why per-flat and per-transformer data is becoming available.</p>
+        <h3>Operations view <span style="color:var(--warn)">&middot; mockup</span></h3>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">Sub-meters reporting</div><div class="value mono" id="opsMeters">--</div><div class="sub">across the district</div></div>
+          <div class="kpi"><div class="label">Coordinators active</div><div class="value mono" id="opsCoord">--</div><div class="sub">one per society</div></div>
+        </div>
+        <p class="note">These two counters are derived from the loaded district datasets, but the framing &mdash; a production monitoring console &mdash; is a <b>mockup</b> of what operations would look like at scale. No such console has been built.</p>
+        <h3>This colony</h3>
+        <p>Three synthetic societies on a shared feeder — Society A (60 households, the detailed one), Society B (48, an older/smaller transformer, runs hot), Society C (48, a newer better-rated transformer, has headroom). Fully synthetic: archetype behaviour and appliance ratings are hand-authored, not fitted to a named dataset. Nothing here is claimed as real-time.</p>
+        <h3>Each house's sub-meter</h3>
+        <p>Every house's <b>Load now</b> is its own metered reading — the same granularity a real per-flat sub-meter reports, and the same data path GridBrain's decision ledger reads from directly. No discom API involved; this is a bulk HT society's own billing sub-meters.</p>
+        <h3>What GridBrain actually does here</h3>
+        <p>The curtailment lines in the ledger are the <b>real, already-simulated</b> engine decisions (the same transformer-protection logic that runs in the physics), surfaced in plain English as they happen — not a separate fabricated demo layer. The cross-society "headroom" lines are a live computed comparison across the three transformers, framed as a recommendation: this colony does not yet simulate an automated cross-feeder transfer mechanism, and that's stated here rather than implied.</p>
+        <h3>The sibling single-building benchmark</h3>
+        <p>Aethergrid's forecasting method (95th-percentile chance-constrained dispatch) is validated separately on <b>real meter data</b>: Building Data Genome Project 2 — four real buildings, two years, held-out test months, American sites (Tempe, Arizona), openly disclosed. Only the <i>method</i> transfers, not the load shapes. Tariff, bill engine and calibration are checked against a real published Tamil Nadu (TNERC) order, at aethergrid-vert.vercel.app/method — a different, complementary piece of evidence, not this same system.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="timeline">
+  <canvas id="topSpark" width="1200" height="34" title="Society A transformer loading across the whole day"></canvas>
+  <div class="timeline-controls">
+    <button class="play-btn" id="playBtn">&#9654;</button>
+    <div class="speed-group" id="speedGroup"></div>
+    <span class="time-label mono" id="timeLabel">00:00</span>
+    <input type="range" id="scrub" min="0" max="95" value="40" step="1">
+    <span class="date-label mono" id="dateLabel"></span>
+  </div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>

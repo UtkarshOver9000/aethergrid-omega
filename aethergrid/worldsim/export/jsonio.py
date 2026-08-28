@@ -86,6 +86,7 @@ def society_to_dict(scenario: WorldSimScenario, society: SocietyScenario, result
             "society": {
                 "common_kw": round(float(result.common_infra_kw[t]), 3),
                 "solar_kw": round(float(sum(s.solar_kw[t] for s in result.house_series)), 3),
+                "community_solar_kw": round(float(result.community_solar_kw[t]), 3),
                 "common_infra": {
                     "water_tank_level_pct": round(float(ci.water_tank_level_pct[t]), 1),
                     "pump_on": bool(ci.pump_on[t]), "lift_active": bool(ci.lift_active[t]),
@@ -95,7 +96,7 @@ def society_to_dict(scenario: WorldSimScenario, society: SocietyScenario, result
                 "fairness": {
                     "curtailed_house_ids": result.curtailed_ids_by_tick[t],
                     "total_curtailed_kwh": round(float(result.total_curtailed_kwh_by_tick[t]), 3),
-                    "override_events": [],
+                    "override_events": result.override_ids_by_tick[t],
                 },
             },
             "workspace": workspace_dyn,

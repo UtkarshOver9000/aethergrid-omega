@@ -94,12 +94,20 @@ class HouseholdSeries:
     comfort_dev_c: np.ndarray
     occupancy: np.ndarray
     deferrables_active: list  # list[list[str]] per tick
+    # True on ticks where this house WAS selected for curtailment but the
+    # resident's override kept its load running anyway. The engine already
+    # rolled this decision (override_draws) -- it used to be computed and
+    # thrown away, which meant the exported "override_events" field was a
+    # hardcoded empty list. This makes the fairness claim ("a quota signal,
+    # not a command") checkable against real recorded behaviour.
+    overrode: np.ndarray
 
 
 def simulate_household(config: HouseholdConfig, archetype: HouseholdArchetype, env: Environment,
                         dt_hours: float, curtail_mask: np.ndarray | None = None,
                         occupancy_multiplier: np.ndarray | None = None,
-                        force_ev_present: np.ndarray | None = None) -> HouseholdSeries:
+                        force_ev_present: np.ndarray | None = None,
+                        enable_solar_sync: bool = False) -> HouseholdSeries:
     """curtail_mask: optional bool array (len n_steps), True where the
     transformer breach-shedding logic (engine/transformer.py) has decided
     to shed this house's non-critical load this tick -- applied AFTER
@@ -126,9 +134,57 @@ def simulate_household(config: HouseholdConfig, archetype: HouseholdArchetype, e
     floor_area = config.floors * FLOOR_AREA_M2_PER_FLOOR
     T = (archetype.comfort_t_min_c + archetype.comfort_t_max_c) / 2.0
     ac_on_state = False
-    dhw_soc = config.dhw_capacity_kwh * 0.6
-    batt_soc = config.battery_kwh * 0.5
-    ev_soc = config.ev_capacity_kwh * 0.4 if config.has_ev else 0.0
+    # Same cold-start reasoning as the EV initial charge below: a fixed 0.6
+    # for every geyser meant every water tank in the world sat just under its
+    # 0.85 reheat threshold at t=0 and every element switched on together for
+    # the first half hour. Real tanks are at scattered points in their
+    # heat/draw cycle overnight, so the start point is jittered across it --
+    # some already hot and idle, some genuinely due a reheat.
+    dhw_soc = config.dhw_capacity_kwh * rng.uniform(0.55, 1.0)
+    batt_soc = config.battery_kwh * rng.uniform(0.3, 0.7)
+    # Initial EV charge. The old fixed 0.4-for-every-car start was a
+    # cold-start artifact, not a modelling choice: the run begins at 00:00,
+    # so every car already parked at home has been plugged in since the
+    # previous evening and a 3.3 kW charger would long since have finished.
+    # Starting them all at 40% instead made the whole world begin charging in
+    # lockstep at t=0, which at district scale produced a false midnight
+    # coincident peak ~39% ABOVE the genuine evening one. Cars that are home
+    # at t=0 therefore start at or above their charge target (they are done);
+    # cars that are out start partly depleted, and charge when they arrive.
+    # Jittered per household for the same reason the comfort threshold above
+    # is -- identical initial conditions create artificial synchronization.
+    if config.has_ev:
+        _home_overnight = occ.occupancy_frac[0] > 0.35
+        _soc0 = rng.uniform(0.90, 1.0) if _home_overnight else rng.uniform(0.25, 0.55)
+        ev_soc = config.ev_capacity_kwh * _soc0
+    else:
+        ev_soc = 0.0
+    # per-house solar-sync fallback hour (see the EV block below) -- spread
+    # across the early evening so the fallback does not itself synchronize
+    ev_fallback_hour = rng.uniform(16.5, 19.5)
+
+    # Solar-sync only makes sense for a household whose car is actually HOME
+    # while the sun is up. For a commuter whose EV is away all day there is no
+    # daylight window to shift into, so deferring its overnight charge does
+    # not chase solar -- it just pushes the charge out of the cheap, empty
+    # small hours and into the evening fallback, on top of the evening peak.
+    # Measured: applying sync indiscriminately made the district's coincident
+    # peak WORSE than doing nothing. So it is enabled per household, only
+    # where a real daylight charging opportunity exists.
+    # Per-house irradiance threshold for "there is enough sun to charge on".
+    # A single shared 50 W/m^2 cutoff made the solar window OPENING a
+    # synchronizing event in its own right: every deferred car in the world
+    # switched on within the same 15 minutes at sunrise, replacing the old
+    # midnight spike with an equally artificial 07:00 one (measured: +169 kVA
+    # on one society). Spreading the threshold staggers cars across the
+    # sunrise ramp and also matches charging to actual available irradiance
+    # rather than to the first glimmer of light.
+    ev_solar_threshold = rng.uniform(80.0, 450.0)
+    _ev_present_all = (occ.occupancy_frac > 0.35)
+    if force_ev_present is not None:
+        _ev_present_all = _ev_present_all | force_ev_present
+    _daylight = env.ghi_wm2 > ev_solar_threshold
+    house_can_solar_sync = bool(config.has_ev and (_ev_present_all & _daylight).any())
     ev_present_prev = False
 
     hours = env.index.hour.values + env.index.minute.values / 60.0
@@ -138,12 +194,14 @@ def simulate_household(config: HouseholdConfig, archetype: HouseholdArchetype, e
         ev_state=["absent"] * n, ev_soc_frac=np.zeros(n), solar_kw=np.zeros(n),
         battery_soc_frac=np.zeros(n), indoor_temp_c=np.zeros(n), comfort_dev_c=np.zeros(n),
         occupancy=occ.occupant_count.copy(), deferrables_active=[[] for _ in range(n)],
+        overrode=np.zeros(n, dtype=bool),
     )
 
     for t in range(n):
         occupied = occ.occupancy_frac[t] > 0.2
         curtailed_now = bool(curtail_mask[t]) if curtail_mask is not None else False
         respects_curtailment = curtailed_now and not override_draws[t]
+        out.overrode[t] = curtailed_now and bool(override_draws[t])
 
         # --- untouchable loads (occupancy-gated, never curtailed) ---
         fan_light = (HOUSEHOLD_APPLIANCES["ceiling_fan"].rated_kw + HOUSEHOLD_APPLIANCES["led_lighting"].rated_kw
@@ -195,7 +253,27 @@ def simulate_household(config: HouseholdConfig, archetype: HouseholdArchetype, e
                 ev_soc = max(0.0, ev_soc - deficit)
             if ev_present:
                 target = 0.9 * config.ev_capacity_kwh
-                want = config.ev_charger_kw if (ev_soc < target and not respects_curtailment) else 0.0
+                # solar-sync: shift charging toward daylight hours when this
+                # house's own solar could cover it, instead of charging the
+                # instant the car is home. A safety floor (half of target)
+                # and an evening fallback guarantee the car is never left
+                # stranded low just to chase sunshine -- this only changes
+                # WHEN charging happens, never whether it eventually does.
+                #
+                # The fallback hour is jittered per household. A hard 17:00
+                # for every car made the fallback itself a synchronizing
+                # event: every EV that missed the solar window switched on at
+                # the same instant, which could push the evening peak HIGHER
+                # than doing nothing. Staggering it is the difference between
+                # coordination and merely moving the spike.
+                solar_priority_window = env.ghi_wm2[t] > ev_solar_threshold
+                may_charge_now = (
+                    not (enable_solar_sync and house_can_solar_sync)
+                    or solar_priority_window
+                    or ev_soc < 0.5 * target
+                    or hours[t] >= ev_fallback_hour
+                )
+                want = config.ev_charger_kw if (ev_soc < target and not respects_curtailment and may_charge_now) else 0.0
                 ev_res = ev_step(ev_soc, config.ev_capacity_kwh, config.ev_charger_kw, want, dt_hours, True)
                 ev_soc, ev_kw = ev_res.soc_kwh, ev_res.actual_charge_kw
                 out.ev_state[t] = "charging" if ev_kw > 0.05 else ("full" if ev_soc >= target else "idle")

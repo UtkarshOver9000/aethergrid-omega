@@ -46,11 +46,18 @@ def decide_transformer_state_and_curtailment(
     household_flexible_kw_baseline: np.ndarray,  # [n_steps, n_houses] the AC+geyser+EV portion, i.e. what curtailment can actually remove
     common_infra_kw: np.ndarray, pump_on, lift_active, streetlights_on, stp_on, clubhouse_hvac_kw,
     workspace_kw: np.ndarray,
+    enable_curtailment: bool = True,
+    community_solar_kw: np.ndarray | None = None,
 ) -> TransformerDecision:
     n_steps, n_houses = household_kw_baseline.shape
     non_critical_common = _non_critical_common_kw(common_infra, pump_on, lift_active, streetlights_on, stp_on, clubhouse_hvac_kw)
 
-    total_uncurtailed = household_kw_baseline.sum(axis=1) + common_infra_kw + workspace_kw
+    # A big shared solar station's output offsets aggregate demand directly,
+    # exactly like rooftop solar already nets out each house's own draw --
+    # same mechanism, society scale instead of household scale. Defaults to
+    # zero so societies without one are completely unaffected.
+    community_solar = community_solar_kw if community_solar_kw is not None else np.zeros(n_steps)
+    total_uncurtailed = np.maximum(0.0, household_kw_baseline.sum(axis=1) + common_infra_kw + workspace_kw - community_solar)
     kva_uncurtailed = total_uncurtailed / spec.assumed_power_factor
 
     kva = np.zeros(n_steps)
@@ -62,13 +69,13 @@ def decide_transformer_state_and_curtailment(
 
     for t in range(n_steps):
         provisional_state = spec.state_for(kva_uncurtailed[t])
-        shed_common = provisional_state in ("BREACH", "TRIPPED")
+        shed_common = enable_curtailment and provisional_state in ("BREACH", "TRIPPED")
         total = total_uncurtailed[t]
         if shed_common:
             total -= non_critical_common[t]
 
         houses_to_shed: list[int] = []
-        if provisional_state in ("BREACH", "TRIPPED"):
+        if enable_curtailment and provisional_state in ("BREACH", "TRIPPED"):
             # deterministic round-robin so curtailment rotates across households over the day
             # instead of always hitting the same ones ("do not curtail the same six flats")
             flex = household_flexible_kw_baseline[t]
