@@ -1,0 +1,28 @@
+# Vercel deploys the world sim as a pure static site. Everything below is
+# either server-side, regenerable, or unused by the browser.
+
+# Python simulation engine — runs offline to produce viz/data/*.json.
+# Nothing here is executed at request time.
+aethergrid/
+api/
+docs/
+pyproject.toml
+requirements.txt
+runtime.txt
+Makefile
+
+# Per-society detail exports (~70 MB). generate_district.py writes these, but
+# the renderer only ever reads viz/data/district.json — the district view is
+# built entirely from that file's per-tick rollups. Regenerate locally with
+#   python -m aethergrid.worldsim.generate_district
+viz/data/soc_*.json
+
+# Planning/working docs
+*.md
+!viz3d/README.md
+
+# Local tooling
+.claude/
+.pytest_cache/
+__pycache__/
+*.pyc
