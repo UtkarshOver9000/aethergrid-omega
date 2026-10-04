@@ -1,5 +1,7 @@
 # AETHERGRID Ω
 
+![CI](https://github.com/UtkarshOver9000/aethergrid-omega/actions/workflows/ci.yml/badge.svg)
+
 **Adaptive Energy & Thermal Ecosystem for Hierarchical Grid Intelligence**
 
 AI-based electricity demand optimization for smart buildings — a
@@ -14,6 +16,71 @@ opportunities between buildings.
 > discovers when buildings can help each other, and proves — via a
 > deterministic bill engine and a perfect-foresight oracle — whether every
 > intervention was actually worth it.
+
+## Real-data results: day-ahead load forecasting on 84 Indian households
+
+The forecaster's approach (LightGBM quantile regression) is benchmarked on **real smart-meter
+data**. It forecasts every household's hourly electricity use 24 hours ahead, then the
+feeder total.
+
+| | |
+|---|---|
+| Load data | CEEW high-frequency smart meters, Mathura and Bareilly, Uttar Pradesh: 84 households (46 Bareilly, 38 Mathura), 3-minute readings aggregated to 1,069,869 household-hours, 2019-05-01 → 2021-10-31 ([Harvard Dataverse doi:10.7910/DVN/GOCHJH](https://doi.org/10.7910/DVN/GOCHJH), CC0) |
+| Weather | Open-Meteo historical archive (ERA5-based, CC BY 4.0): hourly temperature, humidity and solar radiation for each city |
+| Outages | 71,106 household-hours had no grid supply; they are excluded from training targets and scoring |
+| Split | train 2019-05-08 → 2020-06-30 (451,426 rows) · validation 2020-07-01 → 2020-09-30 (94,088) · **test 2020-10-01 → 2021-10-31 (258,100)** |
+| Inputs | load 24 h, 48 h and 168 h earlier, same-hour mean of the past 7 days, the 24 h window ending a day earlier, calendar, household scale, city, weather |
+
+Observed weather stands in for a day-ahead weather forecast, which makes the weather
+inputs slightly optimistic. Every load input is at least 24 hours old.
+
+**Feeder level (all households summed per hour), the load a distribution company
+schedules day-ahead:**
+
+| Method | MAE (kWh/h) | RMSE | WAPE | Absolute error per day | Daily peak hour within ±1 h |
+|---|---|---|---|---|---|
+| **LightGBM (mean model)** | **1.2391** | **1.6566** | **12.69%** | **29.74 kWh** | **64.1%** |
+| Same hour yesterday | 1.4029 | 1.9137 | 14.37% | 33.67 kWh | 55.1% |
+| Mean of same hour, last 7 days | 1.4729 | 1.9827 | 15.09% | 35.35 kWh | 58.1% |
+| Same hour last week | 2.0704 | 2.8132 | 21.21% | 49.69 kWh | 51.0% |
+
+The LightGBM forecast cuts the day-ahead scheduling error by **11.7%** against the best
+naive method (29.74 vs 33.67 kWh/day over 396 test days). It also finds the daily peak
+hour on 64.1% of days, against 55.1%.
+
+**Household level (each home, each hour):**
+
+| Method | MAE (kWh) | RMSE | WAPE | Bias |
+|---|---|---|---|---|
+| **LightGBM q50 (median)** | **0.1298** | 0.2680 | **36.09%** | −0.0388 |
+| LightGBM mean model | 0.1383 | **0.2613** | 38.47% | −0.0026 |
+| Mean of same hour, last 7 days | 0.1409 | 0.2731 | 39.18% | 0.0055 |
+| Same hour yesterday | 0.1530 | 0.3190 | 42.54% | 0.0012 |
+| Same hour last week | 0.1846 | 0.3719 | 51.36% | 0.0098 |
+
+A single home's hour-to-hour use is noisy (WAPE above 36% for every method). The median
+model has the lowest MAE, 7.9% below the best baseline. The q10-q90 band contains 75.96%
+of actual values against a nominal 80%, so the intervals are slightly too narrow. Pinball
+losses: q10 0.0229, q50 0.06488, q90 0.04042.
+
+Medians don't add up: summing households' q50 forecasts under-predicts the feeder total
+(bias −1.05 kWh/h). That's why the feeder forecast uses the mean model.
+
+Training stopped by validation loss: q10 at round 1,648, q50 at 1,336, q90 at 1,349, and
+the mean model at 262.
+
+![Training curves](reports/figures/ceew_training_curves.png)
+![One test week, feeder level](reports/figures/ceew_test_week.png)
+
+Reproduce (downloads about 1 GB from Harvard Dataverse, then about 3 minutes of training):
+
+```bash
+python -m aethergrid.realdata.ceew --out data/ceew
+python -m aethergrid.realdata.forecast_benchmark --ceew-dir data/ceew
+```
+
+Full numbers: `reports/ceew_forecast_metrics.json`. The rest of this README describes the
+closed-loop system, which runs on simulated buildings (see `docs/LIMITATIONS.md`).
 
 ## Quick start
 
@@ -84,8 +151,8 @@ how each is actually falsifiable, and `docs/generated/` (produced by
 ## What is measured / simulated / assumed / learned / optimized / NOT modeled
 
 Full claim-discipline statement, including the specific things this build
-deliberately did NOT do given a single-session time budget (real building
-meter data, multi-agent RL, a GNN, physical energy transfer between most
+deliberately did NOT do given a single-session time budget (real meter data
+inside the control loop, multi-agent RL, a GNN, physical energy transfer between most
 building pairs, an LLM anywhere in the money path): **`docs/LIMITATIONS.md`**.
 Read this before quoting any number from this project.
 

@@ -1,0 +1,172 @@
+{
+  "data": {
+    "dataset": "CEEW high-frequency smart meter data, Mathura and Bareilly (doi:10.7910/DVN/GOCHJH, CC0)",
+    "weather": "Open-Meteo historical archive (CC BY 4.0), hourly, Asia/Kolkata",
+    "households": 84,
+    "bareilly_households": 46,
+    "mathura_households": 38,
+    "household_hours": 1069869,
+    "complete_hours": 1069688,
+    "outage_hours": 71106,
+    "first_hour": "2019-05-01 00:00:00",
+    "last_hour": "2021-10-31 23:00:00",
+    "rows_used": 828871,
+    "test_rows_with_all_baselines": 258100,
+    "test_rows_before_baseline_filter": 283357,
+    "split": {
+      "train": {
+        "rows": 451426,
+        "from": "2019-05-08 00:00:00",
+        "to": "2020-06-30 23:00:00"
+      },
+      "validation": {
+        "rows": 94088,
+        "from": "2020-07-01 00:00:00",
+        "to": "2020-09-30 23:00:00"
+      },
+      "test": {
+        "rows": 258100,
+        "from": "2020-10-01 00:00:00",
+        "to": "2021-10-31 23:00:00"
+      }
+    }
+  },
+  "features": [
+    "lag_24",
+    "lag_48",
+    "lag_168",
+    "same_hour_mean_7d",
+    "mean_24h_ending_24h_ago",
+    "max_24h_ending_24h_ago",
+    "hour",
+    "weekday",
+    "month",
+    "is_weekend",
+    "household_train_mean",
+    "is_bareilly",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "shortwave_radiation"
+  ],
+  "training": {
+    "0.1": {
+      "best_round": 1648,
+      "rounds_run": 1748,
+      "loss": "quantile"
+    },
+    "0.5": {
+      "best_round": 1336,
+      "rounds_run": 1436,
+      "loss": "quantile"
+    },
+    "0.9": {
+      "best_round": 1349,
+      "rounds_run": 1449,
+      "loss": "quantile"
+    },
+    "mean": {
+      "best_round": 262,
+      "rounds_run": 362,
+      "loss": "l2"
+    }
+  },
+  "test_household_hourly": {
+    "lightgbm_mean": {
+      "mae_kwh": 0.1383,
+      "rmse_kwh": 0.2613,
+      "wape_pct": 38.47,
+      "bias_kwh": -0.0026
+    },
+    "lightgbm_q50": {
+      "mae_kwh": 0.1298,
+      "rmse_kwh": 0.268,
+      "wape_pct": 36.09,
+      "bias_kwh": -0.0388,
+      "pinball": {
+        "q10": 0.0229,
+        "q50": 0.06488,
+        "q90": 0.04042
+      },
+      "q10_q90_coverage_pct": 75.96,
+      "q10_q90_mean_width_kwh": 0.3757
+    },
+    "same_hour_yesterday": {
+      "mae_kwh": 0.153,
+      "rmse_kwh": 0.319,
+      "wape_pct": 42.54,
+      "bias_kwh": 0.0012
+    },
+    "same_hour_last_week": {
+      "mae_kwh": 0.1846,
+      "rmse_kwh": 0.3719,
+      "wape_pct": 51.36,
+      "bias_kwh": 0.0098
+    },
+    "mean_of_same_hour_last_7_days": {
+      "mae_kwh": 0.1409,
+      "rmse_kwh": 0.2731,
+      "wape_pct": 39.18,
+      "bias_kwh": 0.0055
+    }
+  },
+  "test_feeder_hourly": {
+    "lightgbm_mean": {
+      "mae_kwh": 1.2391,
+      "rmse_kwh": 1.6566,
+      "wape_pct": 12.69,
+      "bias_kwh": -0.07,
+      "daily_peak_hour_within_1h_pct": 64.1,
+      "days_scored": 396,
+      "abs_error_kwh_per_day": 29.74
+    },
+    "lightgbm_q50": {
+      "mae_kwh": 1.4889,
+      "rmse_kwh": 2.0349,
+      "wape_pct": 15.25,
+      "bias_kwh": -1.0527,
+      "daily_peak_hour_within_1h_pct": 59.1,
+      "days_scored": 396,
+      "abs_error_kwh_per_day": 35.73
+    },
+    "same_hour_yesterday": {
+      "mae_kwh": 1.4029,
+      "rmse_kwh": 1.9137,
+      "wape_pct": 14.37,
+      "bias_kwh": 0.0338,
+      "daily_peak_hour_within_1h_pct": 55.1,
+      "days_scored": 396,
+      "abs_error_kwh_per_day": 33.67
+    },
+    "same_hour_last_week": {
+      "mae_kwh": 2.0704,
+      "rmse_kwh": 2.8132,
+      "wape_pct": 21.21,
+      "bias_kwh": 0.2663,
+      "daily_peak_hour_within_1h_pct": 51.0,
+      "days_scored": 396,
+      "abs_error_kwh_per_day": 49.69
+    },
+    "mean_of_same_hour_last_7_days": {
+      "mae_kwh": 1.4729,
+      "rmse_kwh": 1.9827,
+      "wape_pct": 15.09,
+      "bias_kwh": 0.1492,
+      "daily_peak_hour_within_1h_pct": 58.1,
+      "days_scored": 396,
+      "abs_error_kwh_per_day": 35.35
+    }
+  },
+  "business": {
+    "best_naive_method": "same_hour_yesterday",
+    "day_ahead_scheduling_error_kwh_per_day": 29.74,
+    "naive_scheduling_error_kwh_per_day": 33.67,
+    "scheduling_error_reduction_pct": 11.7,
+    "household_mae_reduction_vs_best_naive_pct": 1.8,
+    "peak_hour_identified_within_1h_pct": 64.1
+  },
+  "environment": {
+    "python": "3.11.9",
+    "lightgbm": "4.7.0"
+  },
+  "runtime_seconds": 199.2
+}

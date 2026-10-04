@@ -31,14 +31,17 @@ explicit so nobody mistakes a simplification for a measured fact.
 
 ## WHAT IS ASSUMED (SYNTHETIC / ASSUMED, not measured)
 
-- **Weather and load profiles are fully synthetic**
-  (`core/weather.py`, `core/building.py`). No real building meter data
-  (e.g. Building Data Genome Project 2) is used in this build, despite
-  the sourced execution plans recommending it — this was a deliberate
-  time-tradeoff for a single-session build. The synthetic generator uses
-  seeded seasonal/diurnal weather and archetype-shaped occupancy/load
-  curves, which is exactly the fallback the sourced plans themselves
-  authorize ("hand pick plausible values and say they are hand picked").
+- **Inside the closed-loop digital twin, weather and building load profiles
+  are synthetic** (`core/weather.py`, `core/building.py`): seeded
+  seasonal/diurnal weather and archetype-shaped occupancy/load curves.
+  The MPC, RL, safety-shield and bill results in `docs/generated/` are
+  therefore results on simulated buildings.
+- **The forecasting approach is separately validated on real data:**
+  `aethergrid/realdata/forecast_benchmark.py` trains the same LightGBM
+  quantile method on 84 real Uttar Pradesh households (CEEW smart meters,
+  2019-2021) with real Open-Meteo weather and scores it on a held-out
+  period. See the README's "Real-data results" section. Those numbers
+  are about forecasting household load, not about the controller.
 - **RC thermal parameters (R, C) per building type are hand-picked,
   not fit from data** (`schemas/building.py:ARCHETYPES`). The UI and
   reports should be read as "PARAMETERS SYNTHETIC / ASSUMED", never

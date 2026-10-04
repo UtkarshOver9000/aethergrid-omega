@@ -82,7 +82,7 @@ HTML = b"""<!DOCTYPE html>
       agent-based World simulation, MPC/RL controllers, and a 3-D visualisation
       engine.
     </p>
-    <a class="btn" href="/worldsim">Launch 3D World Viewer</a>
+    <a class="btn" href="https://aethergrid-worldsim.vercel.app">Launch 3D World Viewer</a>
     <p class="note">
       Or <a href="https://github.com/UtkarshOver9000/aethergrid-omega"
       target="_blank" rel="noopener">view the source on GitHub</a>.<br/>

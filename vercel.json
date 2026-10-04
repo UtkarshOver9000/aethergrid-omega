@@ -1,23 +1,10 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/index.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "viz/dist/index.html",
-      "use": "@vercel/static"
-    }
+    { "src": "api/index.py", "use": "@vercel/python" }
   ],
   "routes": [
-    {
-      "src": "/worldsim",
-      "dest": "/viz/dist/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
-    }
+    { "src": "/worldsim", "status": 308, "headers": { "Location": "https://aethergrid-worldsim.vercel.app" } },
+    { "src": "/(.*)", "dest": "api/index.py" }
   ]
 }
